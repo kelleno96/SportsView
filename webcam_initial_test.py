@@ -44,13 +44,14 @@ while 1:
     ret, zedFrame = zed.read()
     zedFrame = cv2.undistort(zedFrame, zed_matrix, dist_coeff_zed)
     zedFrame = zedFrame[:, :1280:]
-    frame = cv2.resize(frame, (0,0), fx=imageScaleFactor, fy=imageScaleFactor)
-    zedFrame = cv2.resize(zedFrame, (0,0), fx=imageScaleFactor, fy = imageScaleFactor)
 
-    x = GetHumanBoxCenter(frame, "Regular Camera")
-    xzed = GetHumanBoxCenter(zedFrame, "Zed")
-    x = x/imageScaleFactor
-    xzed = xzed/imageScaleFactor
+
+    x = GetHumanBoxCenter(frame[:, :640], "Regular Camera")
+    if(not x):
+        x = GetHumanBoxCenter(frame[:, 640:], "Regular Camera")
+    xzed = GetHumanBoxCenter(zedFrame[:, :640], "Zed")
+    if(not xzed):
+        xzed = GetHumanBoxCenter(zedFrame[:, 640:], "Zed")
     if (not x or not xzed):
     	continue
     # put boxes around and get coordinates
