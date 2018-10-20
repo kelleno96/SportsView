@@ -37,9 +37,10 @@ def GetHumanBoxCenter(image, label):
                 # get average color and then append x and color as a tuple
                 hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
                 y_dif = boundingBox[3] - boundingBox[1]
-                h_val = hsv[(int)(boundingBox[1]+y_dif*0.16):(int)(boundingBox[1]+y_dif*.53),boundingBox[0]:boundingBox[2],0].mean()
+                x_dif = boundingBox[2] - boundingBox[0]
+                h_val = hsv[(int)(boundingBox[1]+y_dif*0.32):(int)(boundingBox[1]+y_dif*.53),(int)(boundingBox[0] + x_dif*0.1):(int)(boundingBox[2]-x_dif*.1),0].mean()
                 # print("hsv value: " + str(h_val))
-                cv2.rectangle(image, (boundingBox[0], (int)(boundingBox[1]+y_dif*0.16)), (boundingBox[2], (int)(boundingBox[1]+y_dif*.53)),
+                cv2.rectangle(image, ((int)(boundingBox[0] + x_dif*0.1), (int)(boundingBox[1]+y_dif*0.32)), ((int)(boundingBox[2]-x_dif*.1), (int)(boundingBox[1]+y_dif*.53)),
                               (0, 255, 0), 2)
                 xlist.append((x, h_val))
 

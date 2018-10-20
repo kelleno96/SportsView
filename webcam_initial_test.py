@@ -5,6 +5,9 @@ import numpy as np
 from OrangeBoxGetter import GetOrangeBoxCenter
 import matplotlib.pyplot as plt
 from HumanBoxGetter import GetHumanBoxCenter
+import requests
+import json
+import datetime
 
 camera_matrix = np.array([[852.8381859353582, 0.0, 642.3604852739107],
                           [0.0, 849.8663434244934, 342.35385770005394],
@@ -32,8 +35,6 @@ c2_loc = (30.5 * 25.4, 0)
 c1_ori = 0.0
 c2_ori = 0.0
 
-fig = plt.figure()
-fig.add_subplot(111);
 imageScaleFactor = 2
 
 def match_people_hsv(reg_ppl, zed_ppl):
@@ -101,6 +102,14 @@ while 1:
 
         print("obecjt #" + str(i) + " x, y: " + str(x_loc_obj) + ", " + str(y_loc_obj))
 
-        x = [c1_loc[0], c2_loc[0], (x_loc_obj)]
-        y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
+        # x = [c1_loc[0], c2_loc[0], (x_loc_obj)]
+        # y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
         i+= 1
+
+        # send the x, y location and average hue and time
+        packet = {"x_pos":x_loc_obj, 
+                  "y_pos":y_loc_obj, 
+                  "hue":((match[0][1] + match[1][1])/2), 
+                  "time":str(datetime.datetime.utcnow())}
+        headers = {'Content-Type':'application/json'}
+        # r = requests.post("https://xkscasu3ie.execute-api.us-east-2.amazonaws.com/api/data", data=json.dumps(packet), headers=headers)
