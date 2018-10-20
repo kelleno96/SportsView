@@ -27,8 +27,8 @@ def GetHumanBoxCenter(image, label):
             if(conf > .5):
                 boundingBox = humanDetections[0, 0, i, 3:7]*np.array([width, height, width, height])
                 boundingBox = boundingBox.astype("int")
-                width = boundingBox[2]-boundingBox[1]
-                center = boundingBox[0] + width/2
+                boxWidth = boundingBox[2]-boundingBox[1]
+                center = boundingBox[0] + boxWidth/2
                 center = int(center)
                 x = center + int((oldWidth-height)/2)
                 xlist.append(x)
