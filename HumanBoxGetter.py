@@ -9,7 +9,6 @@ class Human:
         self.position = (x,y)
         self.hue = hue
 
-
 def GetHumanBoxCenter(image, label):
     x = False
     height, width = image.shape[:2]
@@ -31,9 +30,19 @@ def GetHumanBoxCenter(image, label):
                 center = boundingBox[0] + boxWidth/2
                 center = int(center)
                 x = center + int((oldWidth-height)/2)
-                xlist.append(x)
+                
                 cv2.rectangle(image, (boundingBox[0], boundingBox[1]), (boundingBox[2], boundingBox[3]),
                               (255, 0, 200), 2)
+
+                # get average color and then append x and color as a tuple
+                hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+                y_dif = boundingBox[3] - boundingBox[1]
+                h_val = hsv[(int)(boundingBox[1]+y_dif*0.16):(int)(boundingBox[1]+y_dif*.53),boundingBox[0]:boundingBox[2],0].mean()
+                # print("hsv value: " + str(h_val))
+                cv2.rectangle(image, (boundingBox[0], (int)(boundingBox[1]+y_dif*0.16)), (boundingBox[2], (int)(boundingBox[1]+y_dif*.53)),
+                              (0, 255, 0), 2)
+                xlist.append((x, h_val))
+
     cv2.imshow("image" + label, image)
     cv2.waitKey(1)
     return xlist

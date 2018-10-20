@@ -28,15 +28,24 @@ zed.set(4, 720)
 
 # camera locations
 c1_loc = (0, 0)
-c2_loc = (90.5 * 25.4, 0)
-c1_ori = -45.0
+c2_loc = (30.5 * 25.4, 0)
+c1_ori = 0.0
 c2_ori = 0.0
 
 fig = plt.figure()
 fig.add_subplot(111);
 imageScaleFactor = 2
 
-position = (0.0, 0.0)
+def match_people_hsv(reg_ppl, zed_ppl):
+
+    matches = []
+
+    for rppl in reg_ppl:
+        for zppl in zed_ppl:
+            if(abs(rppl[1] - zppl[1]) < 20):
+                matches.append((rppl, zppl))
+
+    return matches
 
 while 1:
 
@@ -48,12 +57,9 @@ while 1:
     zedFrame = zedFrame[:, :1280:]
 
 
-    x = GetHumanBoxCenter(frame[:, :640], "Regular Camera")
-    if(not x):
-        x = GetHumanBoxCenter(frame[:, 640:], "Regular Camera")
-    xzed = GetHumanBoxCenter(zedFrame[:, :640], "Zed")
-    if(not xzed):
-        xzed = GetHumanBoxCenter(zedFrame[:, 640:], "Zed")
+    x = GetHumanBoxCenter(frame, "Regular Camera")
+    xzed = GetHumanBoxCenter(zedFrame, "Zed")
+
     if (not x or not xzed):
     	continue
     # put boxes around and get coordinates
@@ -64,39 +70,37 @@ while 1:
     CxZed = 658.919
     FxZed = 699.555
 
+    # match up people base on hue similarity
+    matches = match_people_hsv(x, xzed)
 
+    i = 0
+    for match in matches:
+        # figure out location
+        beta = 0
+        alpha = 0
+        theta_u_right = degrees(atan(abs(match[1][0] - CxZed) / FxZed))
+        if match[1][0] - CxZed < 0:
+        	beta = 90 - theta_u_right
+        else:
+        	beta = 90+ theta_u_right
 
-    # figure out location
-    beta = 0
-    alpha = 0
-    theta_u_right = degrees(atan(abs(x_loc_r - CxZed) / FxZed))
-    if x_loc_r - CxZed < 0:
-    	beta = 90 - theta_u_right
-    else:
-    	beta = 90+ theta_u_right
+        theta_u_left = degrees(atan(abs(match[0][0] - Cx) / Fx))
+        if match[0][0] - Cx > 0:
+        	alpha = 90 - theta_u_left
+        else:
+        	alpha = 90 + theta_u_left
 
-    theta_u_left = degrees(atan(abs(x_loc_l - Cx) / Fx))
-    if x_loc_l - Cx > 0:
-    	alpha = 90 - theta_u_left
-    else:
-    	alpha = 90 + theta_u_left
+        alpha += c1_ori
+        beta += c2_ori
 
-    alpha += c1_ori
-    beta += c2_ori
+        B = (abs(c1_loc[0] - c2_loc[0])) * sin(radians(beta)) / sin(radians(180 - alpha - beta))
+        A = (abs(c1_loc[0] - c2_loc[0])) * sin(radians(alpha)) / sin(radians(180 - alpha - beta))
 
-    B = (abs(c1_loc[0] - c2_loc[0])) * sin(radians(beta)) / sin(radians(180 - alpha - beta))
-    A = (abs(c1_loc[0] - c2_loc[0])) * sin(radians(alpha)) / sin(radians(180 - alpha - beta))
+        y_loc_obj = B * sin(radians(alpha))/1000
+        x_loc_obj = B * cos(radians(alpha))/1000
 
-    y_loc_obj = B * sin(radians(alpha))/1000
-    x_loc_obj = B * cos(radians(alpha))/1000
+        print("obecjt #" + str(i) + " x, y: " + str(x_loc_obj) + ", " + str(y_loc_obj))
 
-    print("x, y: " + str(x_loc_obj) + ", " + str(y_loc_obj))
-
-    x = [c1_loc[0], c2_loc[0], (x_loc_obj)]
-    y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
-
-    plt.cla()
-    plt.scatter(x, y)
-    #plt.pause(0.05)
-    
-
+        x = [c1_loc[0], c2_loc[0], (x_loc_obj)]
+        y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
+        i+= 1
