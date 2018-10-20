@@ -14,7 +14,7 @@ def GetHumanBoxCenter(image, label):
         conf = humanDetections[0, 0, i, 2]
         objectType = int(humanDetections[0, 0, i, 1])
         if objectType == 15:
-            if(conf > .7):
+            if(conf > .2):
                 boundingBox = humanDetections[0, 0, i, 3:7]*np.array([width, height, width, height])
                 boundingBox = boundingBox.astype("int")
                 width = boundingBox[2]-boundingBox[1]
@@ -23,6 +23,6 @@ def GetHumanBoxCenter(image, label):
                 x = center
                 cv2.rectangle(image, (boundingBox[0], boundingBox[1]), (boundingBox[2], boundingBox[3]),
                               (255, 0, 200), 2)
-    cv2.imshow("image", image)
+    cv2.imshow("image" + label, image)
     cv2.waitKey(1)
     return x

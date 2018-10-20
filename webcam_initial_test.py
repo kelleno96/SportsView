@@ -4,6 +4,7 @@ from math import *
 import numpy as np
 from OrangeBoxGetter import GetOrangeBoxCenter
 import matplotlib.pyplot as plt
+from HumanBoxGetter import GetHumanBoxCenter
 
 camera_matrix = np.array([[852.8381859353582, 0.0, 642.3604852739107],
                           [0.0, 849.8663434244934, 342.35385770005394],
@@ -33,6 +34,7 @@ c2_ori = 0.0
 
 fig = plt.figure()
 fig.add_subplot(111);
+imageScaleFactor = 2
 
 while 1:
 
@@ -42,9 +44,15 @@ while 1:
     ret, zedFrame = zed.read()
     zedFrame = cv2.undistort(zedFrame, zed_matrix, dist_coeff_zed)
     zedFrame = zedFrame[:, :1280:]
-    x = GetOrangeBoxCenter(frame, "Regular Camera")
-    xzed = GetOrangeBoxCenter(zedFrame, "Zed")
+    frame = cv2.resize(frame, (0,0), fx=imageScaleFactor, fy=imageScaleFactor)
+    zedFrame = cv2.resize(zedFrame, (0,0), fx=imageScaleFactor, fy = imageScaleFactor)
 
+    x = GetHumanBoxCenter(frame, "Regular Camera")
+    xzed = GetHumanBoxCenter(zedFrame, "Zed")
+    x = x/imageScaleFactor
+    xzed = xzed/imageScaleFactor
+    if (not x or not xzed):
+    	continue
     # put boxes around and get coordinates
     x_loc_l = x
     x_loc_r = xzed
