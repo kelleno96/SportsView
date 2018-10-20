@@ -36,6 +36,8 @@ fig = plt.figure()
 fig.add_subplot(111);
 imageScaleFactor = 2
 
+position = (0.0, 0.0)
+
 while 1:
 
     # get two images
