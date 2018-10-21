@@ -120,13 +120,21 @@ while 1:
 
         y_loc_ball = delta_y - (B * sin(radians(alpha)) / 1000)
         x_loc_ball = delta_x - (B * cos(radians(alpha)) / 1000)
-        if(y_loc_ball > 0):
-            print("Ball:  x, y: " + str(x_loc_ball) + ", " + str(y_loc_ball))
-            if (plotvis):
-                ax.scatter(x_loc_ball, y_loc_ball, s=10, c='g')
-                ax.set_xbound(0, 10)
-                ax.set_ybound(0, 10)
-                ax.set_aspect('equal')
+
+        packet = {"x_pos":x_loc_ball, 
+                  "y_pos":y_loc_ball, 
+                  "hue":(-1.0), 
+                  "time":str(datetime.datetime.utcnow())}
+
+        headers = {'Content-Type':'application/json'}
+        r = requests.post("https://xkscasu3ie.execute-api.us-east-2.amazonaws.com/api/data", data=json.dumps(packet), headers=headers)
+       
+        print("Ball:  x, y: " + str(x_loc_ball) + ", " + str(y_loc_ball))
+        if (plotvis):
+            ax.scatter(x_loc_ball, y_loc_ball, s=10, c='g')
+            ax.set_xbound(0, 10)
+            ax.set_ybound(0, 10)
+            ax.set_aspect('equal')
 
         # x = [c1_loc[0], c2_loc[0], (x_loc_obj)]
         # y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
