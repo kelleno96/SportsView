@@ -22,25 +22,25 @@ camera_matrix = np.array([[852.8381859353582, 0.0, 642.3604852739107],
 dist_coeff = np.array(
     [0.10608960363005086, -0.14763903923715205, -0.000947508556899222, -0.004152765223021894, 0.036019737628403464])
 
-zed_matrix = np.array([[699.555, 0, 658.919],
-                       [0, 699.555, 360.179],
-                       [0, 0, 1]])
+zed_matrix = np.array([[1784.283108097664, 0.0, 642.9225178970478],
+                       [0.0, 1787.0262645268176, 360.87871534433754],
+                        [0.0, 0.0, 1.0]])
 
-dist_coeff_zed = np.array([-.16912, .021884, 0, 0])
+dist_coeff_zed = np.array([-0.13485041724121793, 0.6660303345880927, 0.006472309177555823, -0.005318732695265743, -4.292297704139373])
 
 cap = cv2.VideoCapture(0)
 cap.set(3, 1280)
 cap.set(4, 720)
 
-zed = cv2.VideoCapture(1)
-zed.set(3, 2560)
+zed = cv2.VideoCapture(2)
+zed.set(3, 1280)
 zed.set(4, 720)
 
 # camera locations
 c1_loc = (0, 0)
-c2_loc = (3.4*39 * 25.4, 0)
-c1_ori = -45 # Negative if camera at 0, 0 is turned in.
-c2_ori = 0
+c2_loc = (36 * 25.4, 0)
+c1_ori = 0.0
+c2_ori = 0.0
 
 imageScaleFactor = 2
 
@@ -52,12 +52,9 @@ def match_people_hsv(reg_ppl, zed_ppl):
         for zppl in zed_ppl:
             if(abs(rppl[1] - zppl[1]) < 20):
                 matches.append((rppl, zppl))
-            else:
-                print("hue difference: " + str(abs(rppl[1]-zppl[1])))
 
     return matches
 
-packetList = []
 while 1:
 
     # get two images
@@ -65,7 +62,6 @@ while 1:
     frame = cv2.undistort(frame, camera_matrix, dist_coeff)
     ret, zedFrame = zed.read()
     zedFrame = cv2.undistort(zedFrame, zed_matrix, dist_coeff_zed)
-    zedFrame = zedFrame[:, :1280:]
 
 
     x = GetHumanBoxCenter(frame, "Regular Camera")
@@ -80,6 +76,7 @@ while 1:
     x_loc_r = xzed
     Cx = 642
     Fx = 852.83
+
     CxZed = zed_matrix[0][2]
     FxZed = zed_matrix[0][0]
 
@@ -110,11 +107,6 @@ while 1:
         x_loc_ball = B * cos(radians(alpha)) / 1000
         if(y_loc_ball > 0):
             print("Ball:  x, y: " + str(x_loc_ball) + ", " + str(y_loc_ball))
-            if (plotvis):
-                ax.scatter(x_loc_ball, y_loc_ball, s=10, c='g')
-                ax.set_xbound(0, 10)
-                ax.set_ybound(0, 10)
-                ax.set_aspect('equal')
 
         # x = [c1_loc[0], c2_loc[0], (x_loc_obj)]
         # y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
@@ -147,13 +139,13 @@ while 1:
 
         print("object #" + str(i) + " x, y: " + str(x_loc_obj) + ", " + str(y_loc_obj))
         if(plotvis):
-            ax.scatter(x_loc_obj, y_loc_obj, s = 10, c = 'r')
-            ax.set_xbound(0, 10)
-            ax.set_ybound(0, 10)
+            ax.scatter(x_loc_obj, y_loc_obj, s = 20, c = 'r')
+            ax.set_xbound(-1, 4)
+            ax.set_ybound(0, 8)
             ax.set_aspect('equal')
             plt.pause(.05)
 
-        # x = [c1_loc[0], c2_loc[0], (x_loc_o bj)]
+        # x = [c1_loc[0], c2_loc[0], (x_loc_obj)]
         # y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
         i+= 1
 
@@ -162,10 +154,5 @@ while 1:
                   "y_pos":y_loc_obj, 
                   "hue":((match[0][1] + match[1][1])/2), 
                   "time":str(datetime.datetime.utcnow())}
-        # packetList.append(packet)
-        #if(len(packetList)==5):
         headers = {'Content-Type':'application/json'}
         r = requests.post("https://xkscasu3ie.execute-api.us-east-2.amazonaws.com/api/data", data=json.dumps(packet), headers=headers)
-        print("SENT PACKET********************************************************************")
-        packetList = []
-    plt.pause(.05)

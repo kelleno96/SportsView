@@ -9,6 +9,14 @@ class Human:
         self.position = (x,y)
         self.hue = hue
 
+
+def getHistogram(imagePatch):
+    imagePatch = cv2.cvtColor(imagePatch, cv2.COLOR_BGR2HSV)
+    for i in range(0, 3):
+        hist = cv2.calcHist([imagePatch], [i], None, [8], [0,256])
+        print(i, hist)
+    return hist
+
 def GetHumanBoxCenter(image, label):
     x = False
     height, width = image.shape[:2]
@@ -40,6 +48,7 @@ def GetHumanBoxCenter(image, label):
                 x_dif = boundingBox[2] - boundingBox[0]
                 h_val = hsv[(int)(boundingBox[1]+y_dif*0.32):(int)(boundingBox[1]+y_dif*.53),(int)(boundingBox[0] + x_dif*0.1):(int)(boundingBox[2]-x_dif*.1),0].mean()
                 # print("hsv value: " + str(h_val))
+                #hist = getHistogram(image[(int)(boundingBox[1]+y_dif*0.32):(int)(boundingBox[1]+y_dif*.53),(int)(boundingBox[0] + x_dif*0.1):(int)(boundingBox[2]-x_dif*.1),:])
                 cv2.rectangle(image, ((int)(boundingBox[0] + x_dif*0.1), (int)(boundingBox[1]+y_dif*0.32)), ((int)(boundingBox[2]-x_dif*.1), (int)(boundingBox[1]+y_dif*.53)),
                               (0, 255, 0), 2)
                 xlist.append((x, h_val))
