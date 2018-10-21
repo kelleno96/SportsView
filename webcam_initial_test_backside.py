@@ -11,7 +11,7 @@ import datetime
 from GreenBallTracker import GreenBallTracker
 import matplotlib.pyplot as plt
 
-plotvis = True
+plotvis = False
 if(plotvis):
     fig = plt.figure(1)
     ax = fig.add_subplot(111)
@@ -25,11 +25,11 @@ dist_coeff = np.array(
 
 zed_matrix = np.array([[1784.283108097664, 0.0, 642.9225178970478], # For silver camera
                        [0.0, 1787.0262645268176, 360.87871534433754],
-                        [0.0, 0.0, 1.0]])
+                       [0.0, 0.0, 1.0]])
 
 dist_coeff_zed = np.array([-0.13485041724121793, 0.6660303345880927, 0.006472309177555823, -0.005318732695265743, -4.292297704139373])
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(2)
 cap.set(3, 1280)
 cap.set(4, 720)
 
@@ -38,10 +38,10 @@ zed.set(3, 2560)
 zed.set(4, 720)
 
 # camera locations
-c1_loc = (0, 0)
-c2_loc = (3.4*39 * 25.4, 0)
-c1_ori = -45 # Negative if camera at 0, 0 is turned in.
-c2_ori = 0 # Negative if camera at (x, 0) is turned in towards middle
+c1_loc = (91 * 25.4, 192 * 25.4)
+c2_loc = (0, 192 * 25.4)
+c1_ori = -25.26 # Negative if camera at 0, 0 is turned in.
+c2_ori = -25.26 # Negative if camera at (x, 0) is turned in towards middle
 
 imageScaleFactor = 2
 
@@ -54,7 +54,8 @@ def match_people_hsv(reg_ppl, zed_ppl):
             if(abs(rppl[1] - zppl[1]) < 20):
                 matches.append((rppl, zppl))
             else:
-                print("hue difference: " + str(abs(rppl[1]-zppl[1])))
+                pass
+                # print("hue difference: " + str(abs(rppl[1]-zppl[1])))
 
     return matches
 
@@ -70,7 +71,7 @@ while 1:
 
 
     x = GetHumanBoxCenter(frame, "Regular Camera")
-    xzed = GetHumanBoxCenter(zedFrame, "Zed")
+    xzed = GetHumanBoxCenter(zedFrame, "Zed/silver camera")
     ballx_regular = GreenBallTracker(frame, "ballreg")
     ballx_zed = GreenBallTracker(zedFrame, "Ballzed")
 
@@ -79,10 +80,17 @@ while 1:
     # put boxes around and get coordinates
     x_loc_l = x
     x_loc_r = xzed
-    Cx = 642
-    Fx = 852.83
+    Cx = camera_matrix[0][2]
+    Fx = camera_matrix[0][0]
     CxZed = zed_matrix[0][2]
     FxZed = zed_matrix[0][0]
+
+    # ip = '10.27.255.254'
+    # port = 8080
+    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # s.connect((ip, port))
+    # s.send("test")
+    # s.close()
 
     # match up people base on hue similarity
     matches = match_people_hsv(x, xzed)
@@ -107,8 +115,11 @@ while 1:
         B = (abs(c1_loc[0] - c2_loc[0])) * sin(radians(beta)) / sin(radians(180 - alpha - beta))
         A = (abs(c1_loc[0] - c2_loc[0])) * sin(radians(alpha)) / sin(radians(180 - alpha - beta))
 
-        y_loc_ball = B * sin(radians(alpha)) / 1000
-        x_loc_ball = B * cos(radians(alpha)) / 1000
+        delta_x = abs(c1_loc[0] - 0)/1000
+        delta_y = abs(c1_loc[1] - 0)/1000
+
+        y_loc_ball = delta_y - (B * sin(radians(alpha)) / 1000)
+        x_loc_ball = delta_x - (B * cos(radians(alpha)) / 1000)
         if(y_loc_ball > 0):
             print("Ball:  x, y: " + str(x_loc_ball) + ", " + str(y_loc_ball))
             if (plotvis):
@@ -142,11 +153,16 @@ while 1:
 
         B = (abs(c1_loc[0] - c2_loc[0])) * sin(radians(beta)) / sin(radians(180 - alpha - beta))
         A = (abs(c1_loc[0] - c2_loc[0])) * sin(radians(alpha)) / sin(radians(180 - alpha - beta))
+        # print("B: " + str(B) + " A: " + str(A))
+        delta_x = abs(c1_loc[0] - 0)/1000
+        delta_y = abs(c1_loc[1] - 0)/1000
 
-        y_loc_obj = B * sin(radians(alpha))/1000
-        x_loc_obj = B * cos(radians(alpha))/1000
+        # print("delta_x = " + str(delta_x) + " delta_y = " + str(delta_y))
+        # print("x loc: " + str(B * sin(radians(alpha))/1000) + " y loc: " + str(B * cos(radians(alpha))/1000))
+        y_loc_obj = delta_y - (B * sin(radians(alpha))/1000)
+        x_loc_obj = delta_x - (B * cos(radians(alpha))/1000)
 
-        print("object #" + str(i) + " x, y: " + str(x_loc_obj) + ", " + str(y_loc_obj))
+        # print("object #" + str(i) + " x, y: " + str("%0.2f" % x_loc_obj) + ", " + str("%0.2f" % y_loc_obj))
         if(plotvis):
             ax.scatter(x_loc_obj, y_loc_obj, s = 10, c = 'r')
             ax.set_xbound(0, 10)
@@ -167,6 +183,6 @@ while 1:
         #if(len(packetList)==5):
         headers = {'Content-Type':'application/json'}
         r = requests.post("https://xkscasu3ie.execute-api.us-east-2.amazonaws.com/api/data", data=json.dumps(packet), headers=headers)
-        print("SENT PACKET********************************************************************")
+        # print("SENT PACKET********************************************************************")
         packetList = []
     plt.pause(.05)

@@ -31,7 +31,7 @@ def GetHumanBoxCenter(image, label):
         conf = humanDetections[0, 0, i, 2]
         objectType = int(humanDetections[0, 0, i, 1])
         if objectType == 15:
-            if(conf > .5):
+            if(conf > .9):
                 boundingBox = humanDetections[0, 0, i, 3:7]*np.array([width, height, width, height])
                 boundingBox = boundingBox.astype("int")
                 boxWidth = boundingBox[2]-boundingBox[1]
@@ -46,10 +46,10 @@ def GetHumanBoxCenter(image, label):
                 hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
                 y_dif = boundingBox[3] - boundingBox[1]
                 x_dif = boundingBox[2] - boundingBox[0]
-                h_val = hsv[(int)(boundingBox[1]+y_dif*0.32):(int)(boundingBox[1]+y_dif*.53),(int)(boundingBox[0] + x_dif*0.1):(int)(boundingBox[2]-x_dif*.1),0].mean()
+                h_val = hsv[(int)(boundingBox[1]+y_dif*0.6):(int)(boundingBox[1]+y_dif*.8),(int)(boundingBox[0] + x_dif*0.1):(int)(boundingBox[2]-x_dif*.1),0].mean()
                 # print("hsv value: " + str(h_val))
                 #hist = getHistogram(image[(int)(boundingBox[1]+y_dif*0.32):(int)(boundingBox[1]+y_dif*.53),(int)(boundingBox[0] + x_dif*0.1):(int)(boundingBox[2]-x_dif*.1),:])
-                cv2.rectangle(image, ((int)(boundingBox[0] + x_dif*0.1), (int)(boundingBox[1]+y_dif*0.32)), ((int)(boundingBox[2]-x_dif*.1), (int)(boundingBox[1]+y_dif*.53)),
+                cv2.rectangle(image, ((int)(boundingBox[0] + x_dif*0.1), (int)(boundingBox[1]+y_dif*0.6)), ((int)(boundingBox[2]-x_dif*.1), (int)(boundingBox[1]+y_dif*.8)),
                               (0, 255, 0), 2)
                 xlist.append((x, h_val))
 
