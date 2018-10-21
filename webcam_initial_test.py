@@ -80,7 +80,7 @@ while 1:
     # put boxes around and get coordinates
     x_loc_l = x
     x_loc_r = xzed
-    Cx = 642
+    Cx = 642.36
     Fx = 852.83
     CxZed = zed_matrix[0][2]
     FxZed = zed_matrix[0][0]
@@ -110,13 +110,22 @@ while 1:
 
         y_loc_ball = B * sin(radians(alpha)) / 1000
         x_loc_ball = B * cos(radians(alpha)) / 1000
-        if(y_loc_ball > 0):
-            print("Ball:  x, y: " + str(x_loc_ball) + ", " + str(y_loc_ball))
-            if (plotvis):
-                ax.scatter(x_loc_ball, y_loc_ball, s=10, c='g')
-                ax.set_aspect('equal')
-                ax.set_xbound(0, 91 / 39.1)
-                ax.set_ybound(0, 192 / 39.1)
+        print("Ball:  x, y: " + str(x_loc_ball) + ", " + str(y_loc_ball))
+        packet = {"x_pos": x_loc_ball,
+                  "y_pos": y_loc_ball,
+                  "hue": -1,
+                  "time": str(datetime.datetime.utcnow())}
+        # packetList.append(packet)
+        # if(len(packetList)==5):
+        headers = {'Content-Type': 'application/json'}
+        r = requests.post("https://xkscasu3ie.execute-api.us-east-2.amazonaws.com/api/data", data=json.dumps(packet),
+                          headers=headers)
+        print("SENT PACKET********************************************************************")
+        if (plotvis):
+            ax.scatter(x_loc_ball, y_loc_ball, s=10, c='g')
+            ax.set_aspect('equal')
+            ax.set_xbound(0, 91 / 39.1)
+            ax.set_ybound(0, 192 / 39.1)
 
         # x = [c1_loc[0], c2_loc[0], (x_loc_obj)]
         # y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
