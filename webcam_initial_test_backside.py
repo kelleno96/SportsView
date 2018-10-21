@@ -16,26 +16,25 @@ if(plotvis):
     fig = plt.figure(1)
     ax = fig.add_subplot(111)
 
-camera_matrix = np.array([[852.8381859353582, 0.0, 642.3604852739107],
-                          [0.0, 849.8663434244934, 342.35385770005394],
+camera_matrix = np.array([[1002.3757049332412, 0.0, 687.9046880271991],
+                          [0.0, 1013.1595817543699, 322.92868217922586],
                           [0.0, 0.0, 1.0]])
 dist_coeff = np.array(
-    [0.10608960363005086, -0.14763903923715205, -0.000947508556899222, -0.004152765223021894, 0.036019737628403464])
+    [-0.05781517918727033, -0.05102773634971141, -0.003308634814107245, 0.006733503182426772,
+     0.28063494684779966])
 
-zed_matrix = np.array([[699.555, 0, 658.919],
-                       [0, 699.555, 360.179],
-                       [0, 0, 1]])
+zed_matrix = np.array([[1784.283108097664, 0.0, 642.9225178970478], # For silver camera
+                       [0.0, 1787.0262645268176, 360.87871534433754],
+                        [0.0, 0.0, 1.0]])
 
-
-
-dist_coeff_zed = np.array([-.16912, .021884, 0, 0])
+dist_coeff_zed = np.array([-0.13485041724121793, 0.6660303345880927, 0.006472309177555823, -0.005318732695265743, -4.292297704139373])
 
 cap = cv2.VideoCapture(0)
 cap.set(3, 1280)
 cap.set(4, 720)
 
 zed = cv2.VideoCapture(1)
-zed.set(3, 1280)
+zed.set(3, 2560)
 zed.set(4, 720)
 
 # camera locations
@@ -67,6 +66,8 @@ while 1:
     frame = cv2.undistort(frame, camera_matrix, dist_coeff)
     ret, zedFrame = zed.read()
     zedFrame = cv2.undistort(zedFrame, zed_matrix, dist_coeff_zed)
+    zedFrame = zedFrame[:, :1280:]
+
 
     x = GetHumanBoxCenter(frame, "Regular Camera")
     xzed = GetHumanBoxCenter(zedFrame, "Zed")
