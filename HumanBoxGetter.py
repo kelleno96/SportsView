@@ -31,7 +31,7 @@ def GetHumanBoxCenter(image, label):
         conf = humanDetections[0, 0, i, 2]
         objectType = int(humanDetections[0, 0, i, 1])
         if objectType == 15:
-            if(conf > .5):
+            if(conf > .9):
                 boundingBox = humanDetections[0, 0, i, 3:7]*np.array([width, height, width, height])
                 boundingBox = boundingBox.astype("int")
                 boxWidth = boundingBox[2]-boundingBox[1]

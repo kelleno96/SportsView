@@ -35,14 +35,14 @@ cap.set(3, 1280)
 cap.set(4, 720)
 
 zed = cv2.VideoCapture(1)
-zed.set(3, 1280)
+zed.set(3, 2560)
 zed.set(4, 720)
 
 # camera locations
 c1_loc = (0, 0)
-c2_loc = (3.4*39 * 25.4, 0)
-c1_ori = -45 # Negative if camera at 0, 0 is turned in.
-c2_ori = 0 # Negative if camera at (x, 0) is turned in towards middle
+c2_loc = (91 * 25.4, 0)
+c1_ori = -26 # Negative if camera at 0, 0 is turned in.
+c2_ori = -26 # Negative if camera at (x, 0) is turned in towards middle
 
 imageScaleFactor = 2
 
@@ -66,7 +66,9 @@ while 1:
     ret, frame = cap.read()
     frame = cv2.undistort(frame, camera_matrix, dist_coeff)
     ret, zedFrame = zed.read()
+    zedFrame = zedFrame[:, :1280:]
     zedFrame = cv2.undistort(zedFrame, zed_matrix, dist_coeff_zed)
+
 
     x = GetHumanBoxCenter(frame, "Regular Camera")
     xzed = GetHumanBoxCenter(zedFrame, "Zed")
@@ -112,14 +114,15 @@ while 1:
             print("Ball:  x, y: " + str(x_loc_ball) + ", " + str(y_loc_ball))
             if (plotvis):
                 ax.scatter(x_loc_ball, y_loc_ball, s=10, c='g')
-                ax.set_xbound(0, 10)
-                ax.set_ybound(0, 10)
                 ax.set_aspect('equal')
+                ax.set_xbound(0, 91 / 39.1)
+                ax.set_ybound(0, 192 / 39.1)
 
         # x = [c1_loc[0], c2_loc[0], (x_loc_obj)]
         # y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
 
     i = 0
+    colorList = ['r', 'b', 'c', 'bl']
     for match in matches:
         # figure out location
         beta = 0
@@ -147,9 +150,9 @@ while 1:
 
         print("object #" + str(i) + " x, y: " + str(x_loc_obj) + ", " + str(y_loc_obj))
         if(plotvis):
-            ax.scatter(x_loc_obj, y_loc_obj, s = 10, c = 'r')
-            ax.set_xbound(0, 10)
-            ax.set_ybound(0, 10)
+            ax.scatter(x_loc_obj, y_loc_obj, s = 10, c = colorList[i])
+            ax.set_xbound(0, 91/39.1)
+            ax.set_ybound(0, 192/39.1)
             ax.set_aspect('equal')
             plt.pause(.05)
 
