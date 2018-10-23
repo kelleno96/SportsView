@@ -46,13 +46,13 @@ def GetHumanBoxCenter(image, label):
                 hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
                 y_dif = boundingBox[3] - boundingBox[1]
                 x_dif = boundingBox[2] - boundingBox[0]
-                h_val = hsv[(int)(boundingBox[1]+y_dif*0.6):(int)(boundingBox[1]+y_dif*.8),(int)(boundingBox[0] + x_dif*0.1):(int)(boundingBox[2]-x_dif*.1),0].mean()
+                h_val = hsv[(int)(boundingBox[1]+y_dif*0.4):(int)(boundingBox[1]+y_dif*.6),(int)(boundingBox[0] + x_dif*0.2):(int)(boundingBox[2]-x_dif*.2),0].mean()
                 # print("hsv value: " + str(h_val))
                 #hist = getHistogram(image[(int)(boundingBox[1]+y_dif*0.32):(int)(boundingBox[1]+y_dif*.53),(int)(boundingBox[0] + x_dif*0.1):(int)(boundingBox[2]-x_dif*.1),:])
-                cv2.rectangle(image, ((int)(boundingBox[0] + x_dif*0.1), (int)(boundingBox[1]+y_dif*0.6)), ((int)(boundingBox[2]-x_dif*.1), (int)(boundingBox[1]+y_dif*.8)),
+                cv2.rectangle(image, ((int)(boundingBox[0] + x_dif*0.1), (int)(boundingBox[1]+y_dif*0.4)), ((int)(boundingBox[2]-x_dif*.1), (int)(boundingBox[1]+y_dif*.6)),
                               (0, 255, 0), 2)
                 xlist.append((x, h_val))
 
-    cv2.imshow("image" + label, image)
-    cv2.waitKey(1)
-    return xlist
+    # cv2.imshow("image" + label, image)
+    # cv2.waitKey(1)
+    return (image, xlist)

@@ -67,19 +67,33 @@ while 1:
     frame = cv2.undistort(frame, camera_matrix, dist_coeff)
     ret, zedFrame = zed.read()
     zedFrame = cv2.undistort(zedFrame, zed_matrix, dist_coeff_zed)
-    zedFrame = zedFrame[:, :1280:]
-
+    
 
     x = GetHumanBoxCenter(frame, "Regular Camera")
     xzed = GetHumanBoxCenter(zedFrame, "Zed/silver camera")
+
+    reg_image = x[0]
+    zed_image = xzed[0]
+
     ballx_regular = GreenBallTracker(frame, "ballreg")
     ballx_zed = GreenBallTracker(zedFrame, "Ballzed")
 
-    if (not x or not xzed):
-    	continue
+    # print("ball x in main: " + str(ballx_regular[0]))
+
+    if (ballx_regular[0] and ballx_zed[0]):
+        # print("drawing a cirlce around the ball")
+        cv2.circle(reg_image, ((int)(ballx_regular[0] - 280), (int)(ballx_regular[1])), (int)(ballx_regular[2]), (0, 255, 0), 2, lineType=8, shift=0)
+        cv2.circle(zed_image, ((int)(ballx_zed[0] - 280), (int)(ballx_zed[1])), (int)(ballx_zed[2]), (0, 255, 0), 2, lineType=8, shift=0)
+
+    im_combo = np.concatenate([reg_image, zed_image], axis=1)
+    cv2.imshow("images", im_combo)
+    cv2.waitKey(1)
+
+
+
     # put boxes around and get coordinates
-    x_loc_l = x
-    x_loc_r = xzed
+    x_loc_l = x[1]
+    x_loc_r = xzed[1]
     Cx = camera_matrix[0][2]
     Fx = camera_matrix[0][0]
     CxZed = zed_matrix[0][2]
@@ -93,18 +107,19 @@ while 1:
     # s.close()
 
     # match up people base on hue similarity
-    matches = match_people_hsv(x, xzed)
-    if (ballx_zed and ballx_regular):
+    matches = match_people_hsv(x[1], xzed[1])
+    if (ballx_zed[0] and ballx_regular[0]):
+
         beta = 0
         alpha = 0
-        theta_u_right = degrees(atan(abs(ballx_zed - CxZed) / FxZed))
-        if ballx_zed - CxZed < 0:
+        theta_u_right = degrees(atan(abs(ballx_zed[0] - CxZed) / FxZed))
+        if ballx_zed[0] - CxZed < 0:
             beta = 90 - theta_u_right
         else:
             beta = 90 + theta_u_right
 
-        theta_u_left = degrees(atan(abs(ballx_regular - Cx) / Fx))
-        if ballx_regular - Cx > 0:
+        theta_u_left = degrees(atan(abs(ballx_regular[0] - Cx) / Fx))
+        if ballx_regular[0] - Cx > 0:
             alpha = 90 - theta_u_left
         else:
             alpha = 90 + theta_u_left
@@ -140,6 +155,11 @@ while 1:
         # y = [c1_loc[1], c2_loc[1], (y_loc_obj)]
 
     i = 0
+
+    #continues if there are not people in 
+    if (not x[1] or not xzed[1]):
+        continue
+
     for match in matches:
         # figure out location
         beta = 0
@@ -170,7 +190,7 @@ while 1:
         y_loc_obj = delta_y - (B * sin(radians(alpha))/1000)
         x_loc_obj = delta_x - (B * cos(radians(alpha))/1000)
 
-        # print("object #" + str(i) + " x, y: " + str("%0.2f" % x_loc_obj) + ", " + str("%0.2f" % y_loc_obj))
+        print("object #" + str(i) + " x, y: " + str("%0.2f" % x_loc_obj) + ", " + str("%0.2f" % y_loc_obj))
         if(plotvis):
             ax.scatter(x_loc_obj, y_loc_obj, s = 10, c = 'r')
             ax.set_xbound(0, 10)
